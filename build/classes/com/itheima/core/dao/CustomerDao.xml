@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.core.dao.CustomerDao">
+	
+	<!--sql片段 可以共用  -->
+	<sql id="selectCustomerlistwhere">
+		<where>
+			<if test="cust_name!=null">
+				cust_name like "%"#{cust_name}"%"
+			</if>
+			<if test="cust_source!=null">
+				and cust_source=#{cust_source}
+			</if>
+			<if test="cust_industry!=null">
+				and cust_industry=#{cust_industry}
+			</if>
+			<if test="cust_level!=null">
+				and cust_level=#{cust_level}
+			</if>
+		</where>
+	</sql>
+	<select id="selectCustomerlist" resultType="Customer" parameterType="Customer">
+		select 
+		  cust_id,
+		  cust_name,
+		  cust_user_id,
+		  cust_create_id,
+		  d.dict_item_name cust_source,
+		  b.dict_item_name cust_industry,
+		  c.dict_item_name cust_level,
+		  cust_linkman,
+		  cust_phone,
+		  cust_mobile,
+		  cust_createtime 
+		from
+		  customer a 
+		left join (select dict_id,dict_item_name from base_dict where dict_type_code='002') d on a.`cust_source`=d.dict_id
+		left join (select dict_id,dict_item_name from base_dict where dict_type_code='001') b on a.`cust_industry`=b.dict_id
+		left join (select dict_id,dict_item_name from base_dict where dict_type_code='006') c on a.`cust_level`=c.dict_id
+		<include refid="selectCustomerlistwhere" />
+		<if test="start!=null and rows!=null">
+			limit #{start},#{rows}
+		</if>
+		
+	</select>
+	<select id="countCustomer" parameterType="Customer" resultType="Integer">
+		select count(*) from customer 
+		<include refid="selectCustomerlistwhere" />
+	</select>
+</mapper>
